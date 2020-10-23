@@ -7,4 +7,11 @@ function Mask($mask, $str) {
     }
     return $mask;
 }
+
+function existeSessao() {
+    if (!isset($_SESSION['CODIGO_USUARIO'])) {
+        header("Location: index.php");
+        exit();
+    }
+}
 ?>

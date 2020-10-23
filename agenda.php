@@ -1,5 +1,10 @@
 <?php
+session_start();
+
 require "php/conn.php";
+require "php/func.php";
+
+existeSessao();
 
 $sql = "SELECT c.*, d.NOME_DENTISTA, p.NOME_PACIENTE, pr.NOME_PROCEDIMENTO FROM CONSULTA c INNER JOIN DENTISTA d ON c.CODIGO_DENTISTA = d.CODIGO_DENTISTA INNER JOIN PACIENTE p ON c.CODIGO_PACIENTE = p.CODIGO_PACIENTE INNER JOIN PROCEDIMENTO pr ON c.CODIGO_PROCEDIMENTO = pr.CODIGO_PROCEDIMENTO";
 $query = mysqli_query($conn, $sql);
@@ -50,6 +55,9 @@ if (isset($_GET['excluir'])) {
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item" href="configuracoes.php">Configurações</a>
                     </div>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="deslogar.php">Deslogar</a>
                 </li>
             </ul>
         </div>

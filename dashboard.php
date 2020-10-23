@@ -1,5 +1,12 @@
 <?php
+session_start();
+
 require "php/conn.php";
+require "php/func.php";
+
+existeSessao();
+
+$NOME_USUARIO = $_SESSION['NOME_USUARIO'];
 
 $sql = "SELECT c.*, d.NOME_DENTISTA, p.NOME_PACIENTE, pr.NOME_PROCEDIMENTO FROM CONSULTA c INNER JOIN DENTISTA d ON c.CODIGO_DENTISTA = d.CODIGO_DENTISTA INNER JOIN PACIENTE p ON c.CODIGO_PACIENTE = p.CODIGO_PACIENTE INNER JOIN PROCEDIMENTO pr ON c.CODIGO_PROCEDIMENTO = pr.CODIGO_PROCEDIMENTO WHERE DATA_CONSULTA = CURDATE()";
 $query = mysqli_query($conn, $sql);
@@ -51,6 +58,9 @@ if (isset($_GET['excluir'])) {
                         <a class="dropdown-item" href="configuracoes.php">Configurações</a>
                     </div>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="deslogar.php">Deslogar</a>
+                </li>
             </ul>
         </div>
     </nav>
@@ -58,11 +68,11 @@ if (isset($_GET['excluir'])) {
         <div class="row pt-3">
             <div class="col">
                 <div class="jumbotron">
-                    <h1 class="display-4">Olá, bem-vindo</h1>
+                    <h1 class="display-4">Olá, <?php echo $NOME_USUARIO; ?></h1>
                     <p class="lead">Seja bem-vindo ao sistema de gerenciamento da OdontoMax</p>
                     <hr class="my-4">
                     <p>Para começarmos, é recomendado que você navegue para a central de configurações gerais e configure as pendências.</p>
-                    <a class="btn btn-primary btn-lg" href="#" role="button">Configurações gerais</a>
+                    <a class="btn btn-primary" href="configuracoes.php" role="button">Configurações gerais</a>
                 </div>
             </div>
         </div>

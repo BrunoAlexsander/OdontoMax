@@ -1,5 +1,10 @@
 <?php
+session_start();
+
 require "php/conn.php";
+require "php/func.php";
+
+existeSessao();
 
 $sql = "SELECT * FROM PROCEDIMENTO";
 $query = mysqli_query($conn, $sql);
@@ -60,6 +65,9 @@ if (isset($_GET['excluir'])) {
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item" href="configuracoes.php">Configurações</a>
                     </div>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="deslogar.php">Deslogar</a>
                 </li>
             </ul>
         </div>

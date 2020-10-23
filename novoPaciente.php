@@ -1,6 +1,10 @@
 <?php
-require "php/func.php";
+session_start();
+
 require "php/conn.php";
+require "php/func.php";
+
+existeSessao();
 
 if (isset($_POST['novoPaciente'])) {
     $nome = $_POST['inputNomePaciente'];
@@ -65,6 +69,9 @@ if (isset($_POST['novoPaciente'])) {
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item" href="configuracoes.php">Configurações</a>
                     </div>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="deslogar.php">Deslogar</a>
                 </li>
             </ul>
         </div>
