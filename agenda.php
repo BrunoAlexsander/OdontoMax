@@ -72,7 +72,7 @@ if (isset($_GET['excluir'])) {
         </div>
         <div class="row">
             <div class="col pb-3">
-                <button type="button" class="btn btn-primary">Nova consulta</button>
+                <a class="btn btn-primary" href="novaConsulta.php" role="button">Nova consulta</a>
             </div>
         </div>
         <table id="agenda" class="table table-striped table-bordered" style="width:100%">
