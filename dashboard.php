@@ -1,146 +1,155 @@
 <?php
 session_start();
+define("PAGE_NAME", "Dashboard");
+include("php/Functions.php");
+logged();
+include("includes/header.php");
+include_once("php/Crud.php");
 
-require "php/conn.php";
-require "php/func.php";
+$crud = new Crud();
+$consultations=$crud->selectDB("COUNT(*)", "consultations", "", array());
+$contoday=$crud->selectDB("COUNT(*)", "consultations", "WHERE date = CURDATE()", array());
+$patients=$crud->selectDB("COUNT(*)", "patients", "", array());
+$dentists=$crud->selectDB("COUNT(*)", "dentists", "", array());
+?>
 
-existeSessao();
-
-$NOME_USUARIO = $_SESSION['NOME_USUARIO'];
-
-$sql = "SELECT c.*, d.NOME_DENTISTA, p.NOME_PACIENTE, pr.NOME_PROCEDIMENTO FROM CONSULTA c INNER JOIN DENTISTA d ON c.CODIGO_DENTISTA = d.CODIGO_DENTISTA INNER JOIN PACIENTE p ON c.CODIGO_PACIENTE = p.CODIGO_PACIENTE INNER JOIN PROCEDIMENTO pr ON c.CODIGO_PROCEDIMENTO = pr.CODIGO_PROCEDIMENTO WHERE DATA_CONSULTA = CURDATE()";
-$query = mysqli_query($conn, $sql);
-
-if (isset($_GET['excluir'])) {
-    $excluir = $_GET['excluir'];
-    mysqli_query($conn, "DELETE FROM CONSULTA WHERE CODIGO_CONSULTA = ('$excluir')");
-    header("Location: agenda.php");
+                    <div class="container-fluid">
+						<div class="d-sm-flex align-items-center justify-content-between mb-4">
+							<h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
+						</div>
+						<div class="row">
+							<div class="col">
+								<div class="card shadow mb-4">
+									<div class="card-header py-3">
+									  <h6 class="m-0 font-weight-bold text-primary">Bem-vindo, <?= $_SESSION['username']; ?>!</h6>
+									</div>
+									<div class="card-body">
+									  <div class="text-center">
+										<img class="img-fluid px-3 px-sm-4 mt-3 mb-4" style="width: 25rem;" src="img/undraw_doctors_hwty.svg" alt="">
+									  </div>
+									  <p>Nesse painel será possível fazer uso do gerencimento completo de sua clínica odontológica. Desde fazer alterações em cadastros de pacientes, dentistas credenciados e até mesmo puxar o histórico de um determinado paciente. Veja toda a documentação clicando no link abaixo.</p>
+									  <a target="_blank" rel="nofollow" href="https://github.com/BrunoAlexsander/OdontoMax">GitHub &rarr;</a>
+									</div>
+								  </div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xl-3 col-md-6 mb-4">
+								<div class="card border-left-primary shadow h-100 py-2">
+									<div class="card-body">
+										<div class="row no-gutters align-items-center">
+											<div class="col mr-2">
+												<div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Consultas de Hoje</div>
+												<div class="h5 mb-0 font-weight-bold text-gray-800"><?= $contoday->fetchColumn(); ?></div>
+											</div>
+											<div class="col-auto">
+												<i class="fas fa-calendar fa-2x text-gray-300"></i>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="col-xl-3 col-md-6 mb-4">
+								<div class="card border-left-success shadow h-100 py-2">
+									<div class="card-body">
+										<div class="row no-gutters align-items-center">
+											<div class="col mr-2">
+												<div class="text-xs font-weight-bold text-success text-uppercase mb-1">Todas as Consultas</div>
+												<div class="h5 mb-0 font-weight-bold text-gray-800"><?= $consultations->fetchColumn(); ?></div>
+											</div>
+											<div class="col-auto">
+												<i class="fas fa-calendar-alt fa-2x text-gray-300"></i>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="col-xl-3 col-md-6 mb-4">
+								<div class="card border-left-info shadow h-100 py-2">
+									<div class="card-body">
+										<div class="row no-gutters align-items-center">
+											<div class="col mr-2">
+												<div class="text-xs font-weight-bold text-info text-uppercase mb-1">Pacientes</div>
+												<div class="h5 mb-0 font-weight-bold text-gray-800"><?= $patients->fetchColumn(); ?></div>
+											</div>
+											<div class="col-auto">
+												<i class="fas fa-user-injured fa-2x text-gray-300"></i>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="col-xl-3 col-md-6 mb-4">
+								<div class="card border-left-warning shadow h-100 py-2">
+									<div class="card-body">
+										<div class="row no-gutters align-items-center">
+											<div class="col mr-2">
+												<div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Dentistas</div>
+												<div class="h5 mb-0 font-weight-bold text-gray-800"><?= $dentists->fetchColumn(); ?></div>
+											</div>
+											<div class="col-auto">
+												<i class="fas fa-user-md fa-2x text-gray-300"></i>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="card shadow mb-4">
+							<div class="card-header py-3">
+								<h6 class="m-0 font-weight-bold text-primary">Consultas de Hoje</h6>
+							</div>
+							<div class="card-body">
+								<div class="table-responsive">
+									<table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+										<thead>
+											<tr>
+												<th>Data</th>
+												<th>Horário</th>
+												<th>Paciente</th>
+												<th>Dentista</th>
+												<th>Procedimento</th>
+												<th>Ação</th>
+											</tr>
+										</thead>
+										<tbody>
+<?php
+$loop = $crud->selectDB("c.*, d.name AS dentist_name, p.name AS patient_name, pr.description", "consultations c", "INNER JOIN dentists d ON c.dentist_id = d.id INNER JOIN patients p ON c.patient_id = p.id INNER JOIN procedures pr ON c.procedure_id = pr.id WHERE date = CURDATE()", array());
+while ($row = $loop->fetch(PDO::FETCH_ASSOC)) {
+?>
+											<tr>
+												<td><?= date('d/m/Y', strtotime($row['date'])); ?></td>
+												<td><?= date('H:i', strtotime($row['hour'])); ?></td>
+												<td><?= $row['patient_name']; ?></td>
+												<td><?= $row['dentist_name']; ?></td>
+												<td><?= $row['description']; ?></td>
+												<td>
+													<a href="php/Consultation.php?hash=37CBED723FAA73E496BC1C0AB5648646A2994468DBFDB905693226D1F4DB6FA9&=&id=<?= $row['id'] ?>" class="btn btn-danger btn-circle btn-sm deleteConsultation">
+														<i class="fas fa-trash"></i>
+													</a>
+													<a href="consultation.php?id=<?= $row['id']; ?>" class="btn btn-info btn-circle btn-sm">
+														<i class="fas fa-eye"></i>
+													</a>
+												</td>
+											</tr>
+<?php
 }
 ?>
-<!DOCTYPE html>
-<html lang="pt-BR">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.22/css/dataTables.bootstrap4.min.css">
-    <script src="https://kit.fontawesome.com/7e4be4c189.js"></script>
-    <title>OdontoMax - Dashboard</title>
-</head>
-
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <a class="navbar-brand" href="dashboard.php">OdontoMax</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav mr-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="agenda.php">Agenda <span class="sr-only">(current)</span></a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="pacientes.php">Pacientes</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="dentistas.php">Dentistas</a>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Opções
-                    </a>
-                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <a class="dropdown-item" href="procedimentos.php">Procedimentos</a>
-                        <a class="dropdown-item" href="anamnase.php">Anamnese</a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="configuracoes.php">Configurações</a>
-                    </div>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="deslogar.php">Deslogar</a>
-                </li>
-            </ul>
-        </div>
-    </nav>
-    <div class="container-fluid">
-        <div class="row pt-3">
-            <div class="col">
-                <div class="jumbotron">
-                    <h1 class="display-4">Olá, <?php echo $NOME_USUARIO; ?></h1>
-                    <p class="lead">Seja bem-vindo ao sistema de gerenciamento da OdontoMax</p>
-                    <hr class="my-4">
-                    <p>Para começarmos, é recomendado que você navegue para a central de configurações gerais e configure as pendências.</p>
-                    <a class="btn btn-primary" href="configuracoes.php" role="button">Configurações gerais</a>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col">
-                <h1>Agenda de Hoje</h1>
-                <hr>
-            </div>
-        </div>
-        <table id="agenda" class="table table-striped table-bordered" style="width:100%">
-            <thead>
-                <tr>
-                    <th>Data</th>
-                    <th>Início</th>
-                    <th>Término</th>
-                    <th>Paciente</th>
-                    <th>Dentista</th>
-                    <th>Procedimento</th>
-                    <th>Ação</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php
-                while ($row = mysqli_fetch_array($query)) {
-                ?>
-                    <tr>
-                        <td><?php echo date('d/m/Y', strtotime($row['DATA_CONSULTA'])); ?></td>
-                        <td><?php echo date('H:i', strtotime($row['HORARIO_INICIO'])); ?></td>
-                        <td><?php echo date('H:i', strtotime($row['HORARIO_FIM'])); ?></td>
-                        <td><?php echo $row['NOME_PACIENTE']; ?></td>
-                        <td><?php echo $row['NOME_DENTISTA']; ?></td>
-                        <td><?php echo $row['NOME_PROCEDIMENTO']; ?></td>
-                        <td><i class="fas fa-edit"></i> <a href="agenda.php?excluir=<?php echo $row['CODIGO_CONSULTA']; ?>"><i class="fas fa-trash-alt"></i></a></td>
-                    </tr>
-                <?php
-                }
-                ?>
-            </tbody>
-            <tfoot>
-                <tr>
-                    <th>Data</th>
-                    <th>Início</th>
-                    <th>Término</th>
-                    <th>Paciente</th>
-                    <th>Dentista</th>
-                    <th>Procedimento</th>
-                    <th>Ação</th>
-                </tr>
-            </tfoot>
-        </table>
-    </div>
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
-    <script src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.10.22/js/dataTables.bootstrap4.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            $('#agenda').DataTable({
-                "scrollX": true,
-                "language": {
-                    "url": "https://cdn.datatables.net/plug-ins/1.10.21/i18n/Portuguese-Brasil.json"
-                }
-            });
-        });
-    </script>
-</body>
-
-</html>
+										</tbody>
+										<tfoot>
+											<tr>
+												<th>Data</th>
+												<th>Horário</th>
+												<th>Paciente</th>
+												<th>Dentista</th>
+												<th>Procedimento</th>
+												<th>Ação</th>
+											</tr>
+										</tfoot>
+									</table>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+<?php include("includes/footer.php"); ?>
