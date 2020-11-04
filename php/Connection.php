@@ -1,9 +1,13 @@
 <?php
-// Website configuration
-if (!defined('DB_HOST')) define("SITE_NAME", "OdontoMax");
-
-// Database configuration
-if (!defined('DB_HOST')) define("DB_HOST", "localhost");
-if (!defined('DB_NAME')) define("DB_NAME", "odontomax");
-if (!defined('DB_USER')) define("DB_USER", "root");
-if (!defined('DB_PASS')) define("DB_PASS", "vertrigo");
+require "Config.php";
+class Connection {
+    // Initialize database connection
+    public function connectDB() {
+        try {
+            $conn = new PDO("mysql:host=".DB_HOST.";dbname=".DB_NAME."", "".DB_USER."", "".DB_PASS."");
+            return $conn;
+        } catch (PDOException $exception) {
+            return $exception->getMessage();
+        }
+    }
+}
